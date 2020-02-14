@@ -187,7 +187,7 @@ func main() {
 		case nil:
 			currentBenchmark.AddLine(line)
 		default:
-			fmt.Fprintln(os.Stderr, "prettybench unrecognized line:")
+			fmt.Fprintln(os.Stderr, "gorgeousbench unrecognized line:")
 			fmt.Println(text)
 		}
 	}
