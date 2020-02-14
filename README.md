@@ -1,4 +1,8 @@
-# Prettybench
+# gorgeousbench
+A fork of https://github.com/cespare/prettybench
+Reason for this fork is that I would like to go to different direction with the tool. 
+(Eq. Original tool is printing time unit that makes most sense, while I would like to print different time units at once,
+whih should be easier when comparing results.)
 
 A tool for transforming `go test`'s benchmark output a bit to make it nicer for humans.
 
@@ -9,28 +13,17 @@ read:
 
 ![before](/screenshots/before.png)
 
+Especially if you would like to compare 
+
 ## Solution
 
-    $ go get github.com/cespare/prettybench
-    $ go test -bench=. | prettybench
+    $ go get github.com/jameshruby/gorgeousbench
+    $ go test -bench=. | gorgeousbench
 
-![after](/screenshots/after.png)
-
-* Column headers
-* Columns are aligned
-* Time output is adjusted to convenient units
 
 ## Notes
 
-* Right now the units for the time are chosen based on the smallest value in the column.
-* Prettybench has to buffer all the rows of output before it can print them (for column formatting), so you
-  won't see intermediate progress. If you want to see that too, you could tee your output so that you see the
-  unmodified version as well. If you do this, you'll want to use the prettybench's `-no-passthrough` flag so
-  it doesn't print all the other lines (because then they'd be printed twice):
-
-        $ go test -bench=. | tee >(prettybench -no-passthrough)
 
 ## To Do (maybe)
 
-* Handle benchcmp output
-* Change the units for non-time columns as well (these are generally OK though).
+* EVERYTHING
