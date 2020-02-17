@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -168,21 +169,22 @@ func ParseLine(line string) (*bench.Benchmark, error) {
 	return bench.ParseLine(line)
 }
 
-func main() {
-	flag.Parse()
+func processBenchmark(params io.Reader) []*BenchOutputGroup {
+	scanner := bufio.NewScanner(params)
 	currentBenchmark := &BenchOutputGroup{}
-	scanner := bufio.NewScanner(os.Stdin)
+	var benchmarks []*BenchOutputGroup
 	for scanner.Scan() {
 		text := scanner.Text()
 		line, err := ParseLine(text)
 		switch err {
 		case notBenchLineErr:
 			if okLineMatcher.MatchString(text) {
-				fmt.Print(currentBenchmark)
+				benchmarks = append(benchmarks, currentBenchmark)
 				currentBenchmark = &BenchOutputGroup{}
 			}
 			if !*noPassthrough {
-				fmt.Println(text)
+				//TODO FIX make it work without printing it directly to console
+				// fmt.Println(text)
 			}
 		case nil:
 			currentBenchmark.AddLine(line)
@@ -195,4 +197,10 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	return benchmarks
+}
+
+func main() {
+	flag.Parse()
+	processBenchmark(os.Stdin)
 }
