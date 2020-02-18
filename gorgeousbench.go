@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -151,52 +148,21 @@ func (g *BenchOutputGroup) AddLine(line *bench.Benchmark) {
 	g.Measured |= line.Measured
 }
 
-var (
-	benchLineMatcher = regexp.MustCompile(`^Benchmark.*\t.*\d+`)
-	okLineMatcher    = regexp.MustCompile(`^ok\s`)
-	notBenchLineErr  = errors.New("Not a bench line")
-)
-
-func ParseLine(line string) (*bench.Benchmark, error) {
-	if !benchLineMatcher.MatchString(line) {
-		return nil, notBenchLineErr
-	}
-	fields := strings.Split(line, "\t")
-	if len(fields) < 3 {
-		return nil, notBenchLineErr
-	}
-
-	return bench.ParseLine(line)
-}
-
 func processBenchmark(params io.Reader) []*BenchOutputGroup {
-	scanner := bufio.NewScanner(params)
-	currentBenchmark := &BenchOutputGroup{}
-	var benchmarks []*BenchOutputGroup
-	for scanner.Scan() {
-		text := scanner.Text()
-		line, err := ParseLine(text)
-		switch err {
-		case notBenchLineErr:
-			if okLineMatcher.MatchString(text) {
-				benchmarks = append(benchmarks, currentBenchmark)
-				currentBenchmark = &BenchOutputGroup{}
-			}
-			if !*noPassthrough {
-				//TODO FIX make it work without printing it directly to console
-				// fmt.Println(text)
-			}
-		case nil:
-			currentBenchmark.AddLine(line)
-		default:
-			fmt.Fprintln(os.Stderr, "gorgeousbench unrecognized line:")
-			fmt.Println(text)
-		}
-	}
-	if err := scanner.Err(); err != nil {
+	headSet, err := bench.ParseSet(params)
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	var benchmarks []*BenchOutputGroup
+	currentBenchmark := &BenchOutputGroup{}
+	for _, cbenchmark := range headSet {
+		for _, benchmark := range cbenchmark {
+			currentBenchmark.AddLine(benchmark)
+		}
+	}
+	benchmarks = append(benchmarks, currentBenchmark)
 	return benchmarks
 }
 

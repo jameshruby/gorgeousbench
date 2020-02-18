@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -30,6 +31,10 @@ func TestBenchmarkOutput(t *testing.T) {
 	paramsString := strings.NewReader(strings.Join(params, "\n"))
 	benchmarks := processBenchmark(paramsString)
 
+	for _, b := range benchmarks {
+		fmt.Printf("%s\n", b)
+	}
+
 	actual := strings.Split(benchmarks[0].String(), "\n")
 	for _, sa := range actual {
 		t.Logf("%s\n", sa)
@@ -45,7 +50,7 @@ func TestBenchmarkOutput(t *testing.T) {
 		actualString := actual[i]
 		expectedString := expected[i]
 		if actualString != expectedString {
-			t.Errorf("Benchmark returns incorrect output (ACTUAL|EXPTECTED): \n\n%s\n%s", actualString, expectedString)
+			t.Errorf("Benchmark returns incorrect output (ACTUAL|EXPTECTED): \n\n %s\n%s \n", actualString, expectedString)
 		}
 	}
 }
