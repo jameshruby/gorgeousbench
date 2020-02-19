@@ -171,17 +171,7 @@ func processBenchmark(params io.Reader) []*BenchOutputGroup {
 	return benchmarks
 }
 
-// func GetFormatter(formatter string) interface{} {
-// 	switch formatter {
-// 	case "a":
-// 		return GorgeousbenchFormmater{}
-// 	default:
-// 		return BenchOutputGroup{}
-// 	}
-// }
-
 func main() {
 	flag.Parse()
-	// formatter := GetFormatter("a")
 	processBenchmark(os.Stdin)
 }
