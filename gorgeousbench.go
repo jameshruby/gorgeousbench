@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
@@ -93,6 +94,57 @@ func (g *BenchOutputGroup) String() string {
 		fmt.Fprint(&buf, "\n")
 	}
 	return buf.String()
+}
+
+//Makes CSV file and returnes ints content as a string
+func (g *BenchOutputGroup) CSV(filename string) ([][]string, error) {
+	var rows [][]string
+	if len(g.Lines) == 0 {
+		return rows, nil //Should this err ?
+	}
+	var file *os.File
+	if _, err := os.Stat(filename); os.IsNotExist(err) { //write header
+		file, err = os.OpenFile(filename, os.O_CREATE, 0666)
+		if err != nil {
+			return rows, nil
+		}
+		header := g.tableHeader()
+		rows = append(rows, header)
+	} else {
+		file, err = os.OpenFile(filename, os.O_RDWR|os.O_APPEND, 0660)
+		if err != nil {
+			return rows, nil
+		}
+	}
+	timeFormatFunc := g.TimeFormatFunc()
+	//add all the other benchmark lines
+	for _, line := range g.Lines {
+		row := []string{line.Name, FormatIterations(line.N), timeFormatFunc(line.NsPerOp)}
+		if (g.Measured & bench.MBPerS) > 0 {
+			row = append(row, FormatMegaBytesPerSecond(line))
+		}
+		if (g.Measured & bench.AllocedBytesPerOp) > 0 {
+			row = append(row, FormatBytesAllocPerOp(line))
+		}
+		if (g.Measured & bench.AllocsPerOp) > 0 {
+			row = append(row, FormatAllocsPerOp(line))
+		}
+		rows = append(rows, row)
+	}
+	//save them to CSV
+	csvWriter := csv.NewWriter(file)
+	for _, row := range rows {
+		err := csvWriter.Write(row)
+		if err != nil {
+			return rows, nil
+		}
+	}
+	csvWriter.Flush()
+	err := file.Close()
+	if err != nil {
+		return rows, nil
+	}
+	return rows, nil
 }
 
 func FormatIterations(iter int) string {
