@@ -26,10 +26,7 @@ type Table struct {
 	Cells      [][]string
 }
 
-func (g *BenchOutputGroup) String() string {
-	if len(g.Lines) == 0 {
-		return ""
-	}
+func (g *BenchOutputGroup) tableHeader() []string {
 	columnNames := []string{"benchmark", "iter", "time/iter"}
 	if (g.Measured & bench.MBPerS) > 0 {
 		columnNames = append(columnNames, "throughput")
@@ -40,6 +37,14 @@ func (g *BenchOutputGroup) String() string {
 	if (g.Measured & bench.AllocsPerOp) > 0 {
 		columnNames = append(columnNames, "allocs")
 	}
+	return columnNames
+}
+
+func (g *BenchOutputGroup) String() string {
+	if len(g.Lines) == 0 {
+		return ""
+	}
+	columnNames := g.tableHeader()
 	table := &Table{Cells: [][]string{columnNames}}
 
 	var underlines []string
@@ -166,7 +171,17 @@ func processBenchmark(params io.Reader) []*BenchOutputGroup {
 	return benchmarks
 }
 
+// func GetFormatter(formatter string) interface{} {
+// 	switch formatter {
+// 	case "a":
+// 		return GorgeousbenchFormmater{}
+// 	default:
+// 		return BenchOutputGroup{}
+// 	}
+// }
+
 func main() {
 	flag.Parse()
+	// formatter := GetFormatter("a")
 	processBenchmark(os.Stdin)
 }
